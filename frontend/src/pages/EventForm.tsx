@@ -104,9 +104,31 @@ export function EventFormPage() {
         </div>
 
         <div>
-          <label htmlFor="description" className="block text-sm font-medium mb-1">
-            Descripcion
-          </label>
+          <div className="flex items-center justify-between mb-1">
+            <label htmlFor="description" className="block text-sm font-medium">
+              Descripcion
+            </label>
+            <button
+              type="button"
+              onClick={async () => {
+                if (form.name.length < 3) {
+                  setError("Escribe el nombre primero (minimo 3 caracteres)")
+                  return
+                }
+                try {
+                  setError(null)
+                  const { description } = await eventsApi.generateDescription(form.name)
+                  setForm((prev) => ({ ...prev, description }))
+                } catch (err) {
+                  setError(extractErrorMessage(err, "No se pudo generar"))
+                }
+              }}
+              className="text-xs px-2 py-1 rounded-md border hover:bg-secondary"
+              title="Genera la descripcion del evento con IA (Bonus)"
+            >
+              ✨ Generar con IA
+            </button>
+          </div>
           <textarea
             id="description"
             rows={4}

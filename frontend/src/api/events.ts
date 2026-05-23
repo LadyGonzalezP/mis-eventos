@@ -58,4 +58,9 @@ export const eventsApi = {
 
   myRegistrations: () =>
     apiClient.get<MyEvent[]>("/api/v1/me/registrations").then((r) => r.data),
+
+  generateDescription: (title: string) =>
+    apiClient
+      .post<{ description: string }>("/api/v1/ai/generate-description", { title })
+      .then((r) => r.data),
 }

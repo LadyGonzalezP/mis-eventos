@@ -11,7 +11,7 @@ Configura:
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from mis_eventos.api import auth, events, health, registrations, sessions, speakers
+from mis_eventos.api import ai, auth, events, health, registrations, sessions, speakers
 from mis_eventos.core.config import settings
 from mis_eventos.core.exceptions import register_exception_handlers
 from mis_eventos.core.logging import configure_logging
@@ -79,6 +79,7 @@ def create_app() -> FastAPI:
     app.include_router(speakers.router, prefix=API_V1_PREFIX)
     app.include_router(registrations.event_register_router, prefix=API_V1_PREFIX)
     app.include_router(registrations.me_router, prefix=API_V1_PREFIX)
+    app.include_router(ai.router, prefix=API_V1_PREFIX)  # Bonus IA
 
     return app
 
