@@ -159,15 +159,70 @@ def create_event(...): ...
 
 ---
 
-## 5. Decisiones pendientes (se documentan en cada slice)
+### Decision 3 — State machine como servicio puro (Slice 2)
 
-A medida que avancemos en los slices, agregamos aqui las decisiones nuevas:
+**Que elegimos:** Logica del state machine en `services/event_state.py` como funcion pura `can_transition(current, target) -> bool`, sin DB ni IO.
 
-- [ ] **Decision 3** — State machine como servicio puro vs status string libre (Slice 2)
-- [ ] **Decision 4** — Validacion de conflictos en servicio vs constraint DB (Slice 3)
-- [ ] **Decision 5** — Conteo de cupos: query en cada check vs columna materializada (Slice 4)
-- [ ] **Decision 6** — Provider-agnostic LLM (Slice 8 si hacemos bonus)
-- [ ] **Decision 7** — Deploy: Fly.io vs Railway (Slice 8 si hacemos bonus)
+**Alternativas evaluadas:**
+- **Status como string libre en el modelo** sin validacion → todos los `set status` valdrian.
+- **Logica en cada endpoint** → duplicacion entre publish/cancel/finalize.
+
+**Trade-off:** un modulo mas a mantener, **pero** testeable sin DB (los 20 tests de `test_event_state.py` corren en milisegundos), reutilizable desde cualquier caller, y defendible en code review (lectura clara de las transiciones validas).
+
+**Frase ancla:** *"Logica pura, testeable, defendible."*
+
+---
+
+### Decision 4 — Validacion de conflictos en servicio (Slice 3)
+
+**Que elegimos:** Algoritmo de interval overlap en `services/conflict_validator.py` (funcion `find_conflict`), no en constraint de DB.
+
+**Alternativas evaluadas:**
+- **PostgreSQL EXCLUDE constraint con tstzrange GIST** → mas eficiente para corpus enormes, pero no permite mensaje legible al usuario.
+- **Validacion en frontend** → trivialmente bypasseable.
+- **LLM-as-judge** → segunda fuente de alucinacion, sobreingenierizado.
+
+**Trade-off:** O(n) sobre las sesiones del ponente (no escala a millones), **pero** permite devolver HTTP 409 con detalle del choque (`session_id`, `event_name`, `start_time`, `end_time`) para que la UI muestre un mensaje accionable.
+
+Para corpus grandes la mejora futura es indice GIST de Postgres - documentado en SPEC como "mejora futura explicita".
+
+**Frase ancla:** *"Mensaje legible al usuario - no podria con un constraint exclusivamente."*
+
+---
+
+### Decision 5 — Conteo de cupos en cada check (Slice 4)
+
+**Que elegimos:** Query `COUNT(*)` en cada chequeo de cupos (`services/capacity.count_registrations`).
+
+**Alternativas evaluadas:**
+- **Columna materializada `registered_count` en Event** → mantener consistencia es complejo (triggers, retry, race conditions).
+- **Cache en Redis** → otra dependencia.
+
+**Trade-off:** un query extra por inscripcion. **A cambio:** zero estado duplicado, zero race conditions, zero codigo para mantener sincronizado. Para el MVP con < 10K eventos, el costo del COUNT es despreciable.
+
+Para alta escala, la mejora futura es materializar el contador con triggers de Postgres.
+
+**Frase ancla:** *"Estado duplicado = bug duplicado. Single source of truth."*
+
+---
+
+### Decision 6 — Bcrypt directo sobre passlib
+
+**Que elegimos:** `import bcrypt` y usarlo directo en `core/security.py`.
+
+**Alternativas evaluadas:**
+- **passlib[bcrypt]** (el estandar tradicional) → falla con `bcrypt 4.x+` porque passlib no esta actualizado.
+
+**Trade-off:** menos dependencias intermediarias. **Esta validado en la practica:** el primer intento con passlib me dio `AttributeError: module 'bcrypt' has no attribute '__about__'` y tuve que migrar.
+
+**Frase ancla:** *"Una capa menos. Validado por incidente."*
+
+---
+
+## 6. Decisiones pendientes (slice 8 - bonus)
+
+- [ ] **Decision 7** — Provider-agnostic LLM (Slice 8 si hacemos bonus de IA)
+- [ ] **Decision 8** — Deploy: Fly.io vs Railway (Slice 8 si hacemos bonus de deploy)
 
 ---
 
