@@ -1,0 +1,61 @@
+# Docker Compose para Mis Eventos
+#
+# Levanta el stack completo con UN solo comando:
+#   docker compose up --build
+#
+# Servicios:
+#   - db:       PostgreSQL 16 con healthcheck
+#   - backend:  FastAPI con auto-migrations al arrancar
+#   - frontend: React + Vite (se agrega en Fase D)
+#
+# Los valores de env son DEV ONLY - en produccion se inyectan desde
+# el orquestador (secrets de K8s, Docker Swarm, o variables del cloud).
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: mis-eventos-db
+    environment:
+      POSTGRES_DB: mis_eventos
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d mis_eventos"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: mis-eventos-backend
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/mis_eventos
+      JWT_SECRET: dev-only-replace-in-production-with-32-byte-random-secret
+      JWT_EXPIRATION_HOURS: "24"
+      CORS_ORIGINS: http://localhost:5173,http://localhost:3000
+      LOG_LEVEL: INFO
+      APP_VERSION: "0.1.0"
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:8000/health')\" || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+volumes:
+  postgres_data:
+    name: mis-eventos-postgres-data
