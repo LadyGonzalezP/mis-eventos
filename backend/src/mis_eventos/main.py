@@ -14,6 +14,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from mis_eventos.api import auth, events, health, registrations, sessions, speakers
 from mis_eventos.core.config import settings
 from mis_eventos.core.exceptions import register_exception_handlers
+from mis_eventos.core.logging import configure_logging
+from mis_eventos.core.middleware import RequestIdMiddleware, SecurityHeadersMiddleware
 from mis_eventos.models import (  # noqa: F401 - registra modelos en metadata
     Event,
     Registration,
@@ -21,6 +23,8 @@ from mis_eventos.models import (  # noqa: F401 - registra modelos en metadata
     Speaker,
     User,
 )
+
+configure_logging()
 
 API_V1_PREFIX = "/api/v1"
 
@@ -47,6 +51,10 @@ def create_app() -> FastAPI:
         version=settings.app_version,
         openapi_tags=TAGS_METADATA,
     )
+
+    # Middlewares (orden importa - el ultimo agregado se ejecuta PRIMERO)
+    app.add_middleware(SecurityHeadersMiddleware)
+    app.add_middleware(RequestIdMiddleware)
 
     # CORS - whitelist de origenes desde .env
     app.add_middleware(
