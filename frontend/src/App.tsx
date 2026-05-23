@@ -1,49 +1,55 @@
-/**
- * Componente raiz de la app.
- *
- * Pagina de bienvenida temporal - las rutas reales se agregan en Slice 1+:
- *   /login, /register, /events, /events/:id, /me/events, etc.
- */
+import { Navigate, Route, Routes } from "react-router-dom"
+import { Layout } from "@/components/Layout"
+import { ProtectedRoute } from "@/components/ProtectedRoute"
+import { EventDetailPage } from "@/pages/EventDetail"
+import { EventFormPage } from "@/pages/EventForm"
+import { EventListPage } from "@/pages/EventList"
+import { LoginPage } from "@/pages/Login"
+import { MyEventsPage } from "@/pages/MyEvents"
+import { NotFoundPage } from "@/pages/NotFound"
+import { RegisterPage } from "@/pages/Register"
+
 function App() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-8">
-      <div className="max-w-2xl text-center space-y-6">
-        <div className="space-y-2">
-          <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-foreground">
-            Mis Eventos
-          </h1>
-          <p className="text-lg text-muted-foreground">
-            Plataforma de gestion de eventos
-          </p>
-          <p className="text-sm text-muted-foreground">
-            Reto tecnico Serviinformacion 2026
-          </p>
-        </div>
+    <Routes>
+      <Route element={<Layout />}>
+        <Route index element={<Navigate to="/events" replace />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
 
-        <div className="rounded-lg border bg-card p-6 text-left">
-          <h2 className="font-semibold text-card-foreground mb-3">
-            Estado del proyecto
-          </h2>
-          <ul className="space-y-2 text-sm text-muted-foreground">
-            <li>✅ Backend FastAPI corriendo</li>
-            <li>✅ PostgreSQL conectada</li>
-            <li>✅ Frontend React + Vite + Tailwind listo</li>
-            <li>⏳ Auth + RBAC (siguiente slice)</li>
-          </ul>
-        </div>
+        <Route path="/events" element={<EventListPage />} />
+        <Route path="/events/:id" element={<EventDetailPage />} />
 
-        <div className="text-xs text-muted-foreground">
-          <a
-            href="http://localhost:8000/docs"
-            className="underline hover:text-foreground"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Ver API Swagger →
-          </a>
-        </div>
-      </div>
-    </div>
+        <Route
+          path="/events/new"
+          element={
+            <ProtectedRoute roles={["organizador", "admin"]}>
+              <EventFormPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/events/:id/edit"
+          element={
+            <ProtectedRoute roles={["organizador", "admin"]}>
+              <EventFormPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/me/events"
+          element={
+            <ProtectedRoute>
+              <MyEventsPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route path="/403" element={<NotFoundPage code={403} />} />
+        <Route path="*" element={<NotFoundPage code={404} />} />
+      </Route>
+    </Routes>
   )
 }
 
