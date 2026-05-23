@@ -11,9 +11,10 @@ Configura:
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from mis_eventos.api import health
+from mis_eventos.api import auth, health
 from mis_eventos.core.config import settings
 from mis_eventos.core.exceptions import register_exception_handlers
+from mis_eventos.models import User  # noqa: F401 - registra el modelo en SQLModel.metadata
 
 API_V1_PREFIX = "/api/v1"
 
@@ -57,8 +58,8 @@ def create_app() -> FastAPI:
     app.include_router(health.router)
 
     # --- Endpoints de negocio (prefijo /api/v1/) ---
+    app.include_router(auth.router, prefix=API_V1_PREFIX)
     # Se agregaran en los siguientes slices:
-    # app.include_router(auth.router, prefix=API_V1_PREFIX)
     # app.include_router(events.router, prefix=API_V1_PREFIX)
     # app.include_router(sessions.router, prefix=API_V1_PREFIX)
     # app.include_router(speakers.router, prefix=API_V1_PREFIX)

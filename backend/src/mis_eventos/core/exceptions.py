@@ -16,6 +16,7 @@ mapear errores de forma programatica.
 from typing import Any
 
 from fastapi import FastAPI, Request
+from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
@@ -82,11 +83,14 @@ def register_exception_handlers(app: FastAPI) -> None:
     async def validation_error_handler(
         _request: Request, exc: RequestValidationError
     ) -> JSONResponse:
+        # jsonable_encoder convierte tipos no-JSON (Exception, etc) en strings
         return JSONResponse(
             status_code=422,
-            content={
-                "error": "validation_error",
-                "detail": "Los datos enviados no son validos",
-                "context": {"errors": exc.errors()},
-            },
+            content=jsonable_encoder(
+                {
+                    "error": "validation_error",
+                    "detail": "Los datos enviados no son validos",
+                    "context": {"errors": exc.errors()},
+                }
+            ),
         )

@@ -10,10 +10,10 @@ from alembic import context
 from sqlalchemy import engine_from_config, pool
 from sqlmodel import SQLModel  # noqa: F401 - necesario para que se registren los models
 
-# Importar todos los models aqui para que Alembic los detecte
-# (se iran agregando en cada slice)
-# from mis_eventos.models import user, event, session, speaker, registration  # noqa: F401
 from mis_eventos.core.config import settings
+
+# Importar todos los models aqui para que Alembic los detecte
+from mis_eventos.models import User  # noqa: F401
 
 config = context.config
 
