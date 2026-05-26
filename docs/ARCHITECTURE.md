@@ -219,10 +219,33 @@ Para alta escala, la mejora futura es materializar el contador con triggers de P
 
 ---
 
-## 6. Decisiones pendientes (slice 8 - bonus)
+### Decision 7 — Deploy en Render
 
-- [ ] **Decision 7** — Provider-agnostic LLM (Slice 8 si hacemos bonus de IA)
-- [ ] **Decision 8** — Deploy: Fly.io vs Railway (Slice 8 si hacemos bonus de deploy)
+**Que elegimos:** Render como plataforma de deploy (backend + DB + frontend) con `render.yaml` (Infrastructure as Code).
+
+**Alternativas evaluadas:**
+- **Fly.io**: muy buena para Docker, no duerme en free tier, pero exige tarjeta de credito.
+- **Railway**: UX impecable, pero $5/mes minimo despues del trial.
+- **Vercel + Supabase**: best-of-breed pero requiere coordinar 2 plataformas.
+- **Heroku**: free tier eliminado en 2022.
+
+**Por que Render:**
+1. **Free tier sin tarjeta de credito** - importante para un MVP.
+2. **All-in-one**: Postgres + Web Service (backend) + Static Site (frontend) en una sola plataforma.
+3. **`render.yaml` blueprint**: Infrastructure as Code - el deploy es reproducible y vive en el repo.
+4. **Auto-deploy en cada push a `main`**: pipeline completo sin trabajo manual.
+5. **Soporta Docker** directamente - usa nuestro Dockerfile sin cambios.
+
+**Trade-off:** los servicios duermen tras 15 min de inactividad (primera request post-sleep tarda ~30s). **A cambio:** $0 de costo y deploy declarativo. Para produccion real con trafico constante, se sube al plan Starter ($7/mes) y el sleep desaparece.
+
+**Frase ancla:** *"Infra como codigo + free tier sin card = ideal para MVP defendible."*
+
+---
+
+## 6. Decisiones pendientes
+
+(Todas las decisiones del MVP estan documentadas. Cualquier decision nueva
+durante mantenimiento futuro se agrega como Decision 8, 9, etc.)
 
 ---
 

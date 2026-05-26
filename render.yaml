@@ -1,0 +1,79 @@
+# Render Blueprint - Deploy completo de Mis Eventos
+#
+# Uso:
+# 1. Crear cuenta gratis en render.com (no necesita tarjeta)
+# 2. New + > Blueprint > Conectar este repositorio
+# 3. Render lee este archivo y provisiona todo automaticamente
+# 4. Configurar GROQ_API_KEY en el dashboard del backend (secret)
+#
+# URLs resultantes:
+#   Backend:  https://mis-eventos-backend.onrender.com
+#   Frontend: https://mis-eventos-frontend.onrender.com
+#   Swagger:  https://mis-eventos-backend.onrender.com/docs
+
+databases:
+  - name: mis-eventos-db
+    databaseName: mis_eventos
+    user: postgres
+    plan: free  # 1GB, 90 dias gratis
+    region: oregon
+
+services:
+  # ============================================
+  # Backend FastAPI
+  # ============================================
+  - type: web
+    name: mis-eventos-backend
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    plan: free  # 750 horas/mes, duerme tras 15 min idle
+    region: oregon
+    healthCheckPath: /health
+    envVars:
+      # DB connection string desde el servicio de Postgres
+      - key: DATABASE_URL
+        fromDatabase:
+          name: mis-eventos-db
+          property: connectionString
+
+      # JWT secret generado automaticamente (32 bytes random)
+      - key: JWT_SECRET
+        generateValue: true
+
+      - key: JWT_EXPIRATION_HOURS
+        value: "24"
+
+      # CORS - permite el frontend deployado en Render
+      - key: CORS_ORIGINS
+        value: "https://mis-eventos-frontend.onrender.com,http://localhost:5173"
+
+      - key: LOG_LEVEL
+        value: "INFO"
+
+      - key: APP_VERSION
+        value: "0.1.0"
+
+      # Bonus IA - se setea manualmente en el dashboard (no aqui, es secret)
+      - key: GROQ_API_KEY
+        sync: false
+
+  # ============================================
+  # Frontend React (build estatico)
+  # ============================================
+  - type: web
+    name: mis-eventos-frontend
+    runtime: static
+    buildCommand: cd frontend && npm install && npm run build
+    staticPublishPath: ./frontend/dist
+    plan: free
+    region: oregon
+    # SPA - todas las rutas devuelven index.html para client-side routing
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      # URL del backend deployado - se inyecta en el build de Vite
+      - key: VITE_API_BASE_URL
+        value: "https://mis-eventos-backend.onrender.com"

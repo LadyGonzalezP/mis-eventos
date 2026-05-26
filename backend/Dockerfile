@@ -42,6 +42,6 @@ USER app
 
 EXPOSE 8000
 
-# Entrypoint: corre migraciones y luego arranca uvicorn
-# Si no hay migraciones todavia, alembic upgrade head es no-op
-CMD ["sh", "-c", "uv run alembic upgrade head && uv run uvicorn mis_eventos.main:app --host 0.0.0.0 --port 8000"]
+# Entrypoint: corre migraciones (con reintentos por si la DB tarda) y luego arranca uvicorn
+# El loop de reintentos es util en deploys donde el servicio Postgres tarda en estar listo
+CMD ["sh", "-c", "for i in 1 2 3 4 5 6; do uv run alembic upgrade head && break || (echo 'DB no lista aun, reintentando en 5s...' && sleep 5); done && exec uv run uvicorn mis_eventos.main:app --host 0.0.0.0 --port ${PORT:-8000}"]

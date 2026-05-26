@@ -10,6 +10,21 @@
 
 ---
 
+## 🌐 Deploy en vivo (Render)
+
+| Servicio | URL |
+|---|---|
+| **App (frontend)** | https://mis-eventos-frontend.onrender.com |
+| **API (backend)** | https://mis-eventos-backend.onrender.com |
+| **Swagger / OpenAPI** | https://mis-eventos-backend.onrender.com/docs |
+| **Health check** | https://mis-eventos-backend.onrender.com/health |
+
+> **Nota free tier:** los servicios duermen tras 15 min de inactividad. La primera request despues de dormir puede tardar ~30 segundos. Refresca la pagina si parece colgada.
+
+Infraestructura como codigo en [`render.yaml`](./render.yaml). Provisiona DB Postgres + backend FastAPI + frontend static automaticamente desde el repo.
+
+---
+
 ## ¿Que hace?
 
 **Mis Eventos** resuelve el problema de empresas que gestionan eventos de forma 100% manual (Excel, WhatsApp, papel). Centraliza inscripciones, sesiones, ponentes y asistentes en una sola plataforma web responsiva.
