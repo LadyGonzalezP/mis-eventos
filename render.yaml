@@ -60,14 +60,13 @@ services:
 
   # ============================================
   # Frontend React (build estatico)
-  # Static sites NO aceptan campo region (servido desde CDN global)
+  # Static sites NO aceptan 'region' (CDN global) ni 'plan' (siempre gratis)
   # ============================================
   - type: web
     name: mis-eventos-frontend
     runtime: static
     buildCommand: cd frontend && npm install && npm run build
     staticPublishPath: ./frontend/dist
-    plan: free
     # SPA - todas las rutas devuelven index.html para client-side routing
     routes:
       - type: rewrite
