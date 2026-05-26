@@ -1,0 +1,63 @@
+# Dependabot - actualizaciones automaticas de dependencias
+# https://docs.github.com/code-security/dependabot/dependabot-version-updates
+#
+# Cada semana abre PRs con updates de:
+# - pip (backend Python)
+# - npm (frontend)
+# - github-actions
+
+version: 2
+updates:
+  # Backend Python via pip ecosystem (uv usa lockfile pero pip ecosystem
+  # detecta cambios en pyproject.toml igual)
+  - package-ecosystem: "pip"
+    directory: "/backend"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "America/Bogota"
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "chore(deps-backend)"
+      include: "scope"
+    labels:
+      - "dependencies"
+      - "backend"
+    groups:
+      python-minor-patch:
+        update-types:
+          - "minor"
+          - "patch"
+
+  # Frontend npm
+  - package-ecosystem: "npm"
+    directory: "/frontend"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "America/Bogota"
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "chore(deps-frontend)"
+      include: "scope"
+    labels:
+      - "dependencies"
+      - "frontend"
+    groups:
+      npm-minor-patch:
+        update-types:
+          - "minor"
+          - "patch"
+
+  # GitHub Actions (mantener actions de workflows actualizadas)
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    commit-message:
+      prefix: "chore(ci)"
+    labels:
+      - "dependencies"
+      - "ci"
