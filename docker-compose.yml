@@ -43,6 +43,8 @@ services:
       CORS_ORIGINS: http://localhost:5173,http://localhost:3000
       LOG_LEVEL: INFO
       APP_VERSION: "0.1.0"
+      # Bonus IA - se lee del .env local si existe (gitignored)
+      GROQ_API_KEY: ${GROQ_API_KEY:-}
     ports:
       - "8000:8000"
     depends_on:

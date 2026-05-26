@@ -108,3 +108,4 @@ docker-compose.override.yml
 # ============================================
 *.bak
 .cache/
+CLAUDE.md
