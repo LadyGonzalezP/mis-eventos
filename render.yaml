@@ -14,7 +14,7 @@
 databases:
   - name: mis-eventos-db
     databaseName: mis_eventos
-    user: postgres
+    # user se autogenera por Render ("postgres" esta reservado en el servidor)
     plan: free  # 1GB, 90 dias gratis
     region: oregon
 
@@ -60,6 +60,7 @@ services:
 
   # ============================================
   # Frontend React (build estatico)
+  # Static sites NO aceptan campo region (servido desde CDN global)
   # ============================================
   - type: web
     name: mis-eventos-frontend
@@ -67,7 +68,6 @@ services:
     buildCommand: cd frontend && npm install && npm run build
     staticPublishPath: ./frontend/dist
     plan: free
-    region: oregon
     # SPA - todas las rutas devuelven index.html para client-side routing
     routes:
       - type: rewrite
