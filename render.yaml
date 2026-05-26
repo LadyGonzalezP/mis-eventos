@@ -67,7 +67,21 @@ services:
     runtime: static
     buildCommand: cd frontend && npm install && npm run build
     staticPublishPath: ./frontend/dist
-    # SPA - todas las rutas devuelven index.html para client-side routing
+    # Headers - fuerza MIME types correctos para assets de Vite
+    # Render a veces sirve .css como text/plain rompiendo el SPA con
+    # X-Content-Type-Options: nosniff
+    headers:
+      - path: /assets/*.css
+        name: Content-Type
+        value: text/css; charset=utf-8
+      - path: /assets/*.js
+        name: Content-Type
+        value: application/javascript; charset=utf-8
+      - path: /*.svg
+        name: Content-Type
+        value: image/svg+xml
+    # SPA - paths SIN extension van a index.html (client-side routing)
+    # Paths CON extension (.css, .js, etc) NO se reescriben - se sirven directo
     routes:
       - type: rewrite
         source: /*
