@@ -36,15 +36,20 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     container_name: mis-eventos-backend
+    # Lee variables de backend/.env directamente (incluyendo GROQ_API_KEY).
+    # Si el archivo no existe, se usan los defaults del environment de abajo.
+    env_file:
+      - path: ./backend/.env
+        required: false
     environment:
+      # DATABASE_URL override - apunta al servicio db de la red Docker
       DATABASE_URL: postgresql://postgres:postgres@db:5432/mis_eventos
-      JWT_SECRET: dev-only-replace-in-production-with-32-byte-random-secret
-      JWT_EXPIRATION_HOURS: "24"
-      CORS_ORIGINS: http://localhost:5173,http://localhost:3000
-      LOG_LEVEL: INFO
+      # Defaults seguros para dev si no estan en backend/.env
+      JWT_SECRET: ${JWT_SECRET:-dev-only-replace-in-production-with-32-byte-random-secret}
+      JWT_EXPIRATION_HOURS: ${JWT_EXPIRATION_HOURS:-24}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:5173,http://localhost:3000}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
       APP_VERSION: "0.1.0"
-      # Bonus IA - se lee del .env local si existe (gitignored)
-      GROQ_API_KEY: ${GROQ_API_KEY:-}
     ports:
       - "8000:8000"
     depends_on:
